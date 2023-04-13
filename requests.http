@@ -1,0 +1,22 @@
+GET http://localhost:8080/recipe/0
+###
+POST http://localhost:8080/recipe
+Content-Type: application/json //пересылаем json
+
+{
+  "nameRecipe": "Soup",
+  "cookedTime": 30,
+  "ingredients": [
+    {
+      "nameIngredient": "tomat",
+      "quantityOfIngredients": 3,
+      "measure": "300"
+    }
+  ],
+  "cookingSteps": [
+    "1. ",
+    "2. ",
+    "3. ",
+    "4. "
+  ]
+}
