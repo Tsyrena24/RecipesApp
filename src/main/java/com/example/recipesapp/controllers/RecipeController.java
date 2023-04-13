@@ -24,5 +24,5 @@ public class RecipeController {
     public RecipeDTO addRecipe(@RequestBody Recipe recipe) {
         return recipeServices.addRecipe(recipe);
     }
-}у
+}
 
