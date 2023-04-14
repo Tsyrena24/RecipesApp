@@ -1,16 +1,21 @@
+//Получение рецепта по айди
 GET http://localhost:8080/recipe/0
 ###
+// Получение списка рецепта
+GET http://localhost:8080/recipe
+###
+// Добавление рецепта
 POST http://localhost:8080/recipe
 Content-Type: application/json //пересылаем json
 
 {
-  "nameRecipe": "Soup",
+  "nameRecipe": "Пюре",
   "cookedTime": 30,
   "ingredients": [
     {
-      "nameIngredient": "tomat",
-      "quantityOfIngredients": 3,
-      "measure": "300"
+      "nameIngredient": "Картофель",
+      "quantityOfIngredients": 2,
+      "measure": "шт"
     }
   ],
   "cookingSteps": [
@@ -20,3 +25,63 @@ Content-Type: application/json //пересылаем json
     "4. "
   ]
 }
+###
+// Редактирование рецепта
+PUT http://localhost:8080/recipe/1
+Content-Type: application/json //пересылаем json
+
+{
+  "nameRecipe": "Сок",
+  "cookedTime": 10,
+  "ingredients": [
+    {
+      "nameIngredient": "Яблоко",
+      "quantityOfIngredients": 2,
+      "measure": "100"
+    }
+  ],
+  "cookingSteps": [
+    "1. ",
+    "2. ",
+    "3. ",
+    "4. "
+  ]
+}
+###
+//Удаление рецепта
+DELETE http://localhost:8080/recipe/1
+
+
+###
+// Получение ингредиента по айди
+GET http://localhost:8080/ingredient/1
+
+###
+// Получение списка ингредиентов
+GET http://localhost:8080/ingredient
+
+###
+// Добавление ингредиента
+POST http://localhost:8080/ingredient
+Content-Type: application/json //пересылаем json
+
+{
+  "nameIngredient": "Хлеб",
+  "quantityOfIngredients": 100,
+  "measure": "мл"
+}
+
+###
+// Редактирование ингредиента
+PUT http://localhost:8080/ingredient/1
+Content-Type: application/json //пересылаем json
+
+{
+  "nameIngredient": "Мясо",
+  "quantityOfIngredients": 500,
+  "measure": "гр"
+}
+
+###
+//Удаление ингредиента
+DELETE http://localhost:8080/ingredient/1
