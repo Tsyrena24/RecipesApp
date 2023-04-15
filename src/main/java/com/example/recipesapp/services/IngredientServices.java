@@ -3,8 +3,10 @@ package com.example.recipesapp.services;
 import com.example.recipesapp.dto.IngredientDTO;
 import com.example.recipesapp.exception.IngredientNotFoundException;
 import com.example.recipesapp.model.Ingredient;
+import com.fasterxml.jackson.core.type.TypeReference;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -12,15 +14,30 @@ import java.util.Map;
 
 @Service
 public class IngredientServices {
+    private static final  String STONE_FILE_NAME = "ingredient";
     private int idCounter = 0; //счетчик
 
+    private final FilesService filesService;
 
     public static Map<Integer, Ingredient> ingredients = new HashMap<>();
 
+    public IngredientServices(FilesService filesService) {
+        this.filesService = filesService;
+    }
+
+    @PostConstruct
+    private void init() {
+        TypeReference<Map<Integer, Ingredient>> typeReference = new TypeReference<Map<Integer, Ingredient>>() {};
+        Map<Integer, Ingredient> ingredientMap = this.filesService.readFromFile(STONE_FILE_NAME, typeReference);
+        if (ingredientMap != null) {
+            ingredients.putAll(ingredientMap);
+        }
+    }
 
     public IngredientDTO addIngredient(Ingredient ingredient) {
         int id = idCounter++;
         ingredients.put(id, ingredient);
+        filesService.saveToFile(STONE_FILE_NAME, ingredients);
         return IngredientDTO.from(id, ingredient);
     }
 
@@ -48,6 +65,7 @@ public class IngredientServices {
             throw new IngredientNotFoundException(); //если null - исключение
         }
         ingredients.put(id, ingredient);
+        filesService.saveToFile(STONE_FILE_NAME, ingredients);
         return IngredientDTO.from(id, ingredient);
     }
 
@@ -57,6 +75,7 @@ public class IngredientServices {
         if (existingIngred == null) {
             throw new IngredientNotFoundException(); //если null - исключение
         }
+        filesService.saveToFile(STONE_FILE_NAME, ingredients);
         return IngredientDTO.from(id, existingIngred);
     }
 }

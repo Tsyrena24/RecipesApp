@@ -5,19 +5,37 @@ import com.example.recipesapp.dto.RecipeDTO;
 import com.example.recipesapp.exception.RecipeNotFoundException;
 import com.example.recipesapp.model.Ingredient;
 import com.example.recipesapp.model.Recipe;
+import com.fasterxml.jackson.core.type.TypeReference;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service  //Сервис рецептов использует сервис ингредиентов как зависимость и заинжектить
 public class RecipeServices {
+
+    private static final String STONE_FILE_NAME = "recipes";
     private int idCounter = 0; //счетчик
     private final IngredientServices ingredientServices;
-    private final Map<Integer, Recipe> recipes = new HashMap<>();
 
-    public RecipeServices(IngredientServices ingredientServices) {
+    private final FilesService filesService;
+
+    private Map<Integer, Recipe> recipes = new HashMap<>();
+
+    public RecipeServices(IngredientServices ingredientServices, FilesService filesService) {
         this.ingredientServices = ingredientServices;
+        this.filesService = filesService;
+
+    }
+
+    @PostConstruct
+    private void init() {
+        TypeReference<Map<Integer, Recipe>> typeReference = new TypeReference<Map<Integer, Recipe>>() {};
+        Map<Integer, Recipe> recipes = this.filesService.readFromFile(STONE_FILE_NAME, typeReference);
+        if (recipes != null) {
+            this.recipes.putAll(recipes);
+        }
     }
 
     //Создание рецепта //нужно обращаться к ингредиент сервис и создать нужные ингредиенты
@@ -28,6 +46,7 @@ public class RecipeServices {
         for (Ingredient ingredient : recipe.getIngredients()) {
             this.ingredientServices.addIngredient(ingredient);
         }
+        this.filesService.saveToFile(STONE_FILE_NAME, this.recipes);
         return RecipeDTO.from(id, recipe);
     }
 
@@ -96,6 +115,7 @@ public class RecipeServices {
             throw new RecipeNotFoundException(); //если null - исключение
         }
         recipes.put(id, recipe);
+        this.filesService.saveToFile(STONE_FILE_NAME, this.recipes);
         return RecipeDTO.from(id, recipe);
     }
 
@@ -105,6 +125,7 @@ public class RecipeServices {
         if (existingRecipe == null) {
             throw new RecipeNotFoundException();  //если null - исключение
         }
+        this.filesService.saveToFile(STONE_FILE_NAME, this.recipes);
         return RecipeDTO.from(id, existingRecipe);
 
     }
