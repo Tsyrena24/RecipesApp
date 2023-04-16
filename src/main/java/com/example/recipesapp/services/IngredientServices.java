@@ -19,7 +19,7 @@ public class IngredientServices {
 
     private final FilesService filesService;
 
-    public static Map<Integer, Ingredient> ingredients = new HashMap<>();
+    public Map<Integer, Ingredient> ingredients = new HashMap<>();
 
     public IngredientServices(FilesService filesService) {
         this.filesService = filesService;
@@ -31,6 +31,8 @@ public class IngredientServices {
         Map<Integer, Ingredient> ingredientMap = this.filesService.readFromFile(STONE_FILE_NAME, typeReference);
         if (ingredientMap != null) {
             ingredients.putAll(ingredientMap);
+        } else {
+            ingredients = new HashMap<>();
         }
     }
 

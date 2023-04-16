@@ -3,11 +3,16 @@ package com.example.recipesapp.services;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 
 @Service
 public class FilesService {
@@ -52,9 +57,25 @@ public class FilesService {
         }
     }
 
-//
-//    //удаление файла
-//    public boolean cleanDataFile() {
-//
-//    }
+    //Загрузка файла
+    //про имя файла знает recipeService, но скачиваем мы через fileService
+    //нужно добавить метод в recipeService getfile и там обратиться к файл сервису
+    public Resource getResource(String fileName) {
+        Path fileNewPath = filesPath.resolve(fileName + ".json");
+        return new FileSystemResource(fileNewPath);
+    }
+
+    //
+    public void saveResource(String fileName, Resource resource) {
+        Path fileNewPath = filesPath.resolve(fileName + ".json");
+        try {
+            Files.copy(resource.getInputStream(), fileNewPath, StandardCopyOption.REPLACE_EXISTING); //копия не заменяет файл если он существуе, передаем флажок, который будет заменят файл по умолчанию
+        } catch (IOException e) {
+        e.printStackTrace();
+        }
+
+    }
+
+
+
 }

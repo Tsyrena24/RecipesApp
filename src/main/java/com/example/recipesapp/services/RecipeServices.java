@@ -6,6 +6,7 @@ import com.example.recipesapp.exception.RecipeNotFoundException;
 import com.example.recipesapp.model.Ingredient;
 import com.example.recipesapp.model.Recipe;
 import com.fasterxml.jackson.core.type.TypeReference;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -29,12 +30,15 @@ public class RecipeServices {
 
     }
 
+
     @PostConstruct
     private void init() {
         TypeReference<Map<Integer, Recipe>> typeReference = new TypeReference<Map<Integer, Recipe>>() {};
         Map<Integer, Recipe> recipes = this.filesService.readFromFile(STONE_FILE_NAME, typeReference);
         if (recipes != null) {
             this.recipes.putAll(recipes);
+        } else {
+            this.recipes = new HashMap<>();
         }
     }
 
@@ -128,6 +132,17 @@ public class RecipeServices {
         this.filesService.saveToFile(STONE_FILE_NAME, this.recipes);
         return RecipeDTO.from(id, existingRecipe);
 
+    }
+
+    public Resource getRecipesFile() {
+        return filesService.getResource(STONE_FILE_NAME);
+    }
+
+    public void uploadRecipe(Resource resource) {
+        filesService.saveResource(STONE_FILE_NAME, resource);
+        this.recipes = filesService.readFromFile(STONE_FILE_NAME,
+                new TypeReference<>() {
+                });
     }
 }
 
