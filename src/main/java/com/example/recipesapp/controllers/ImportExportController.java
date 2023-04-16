@@ -1,5 +1,6 @@
 package com.example.recipesapp.controllers;
 
+import com.example.recipesapp.services.IngredientServices;
 import com.example.recipesapp.services.RecipeServices;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -18,9 +19,14 @@ import org.springframework.web.multipart.MultipartFile;
 public class ImportExportController {
     private final RecipeServices recipeServices;
 
-    public ImportExportController(RecipeServices recipeServices) {
+    private final IngredientServices ingredientServices;
+
+    public ImportExportController(RecipeServices recipeServices, IngredientServices ingredientServices) {
         this.recipeServices = recipeServices;
+        this.ingredientServices = ingredientServices;
     }
+
+
 
 
     //Скачивание рецептов //Resource - определяет методы для доступа к ресурсу, такие как получение его имени, чтение и запись данных, закрытие ресурса и т.д.
@@ -44,8 +50,17 @@ public class ImportExportController {
     @Operation(
             summary = "Загрузка рецепта"
     )
-    public ResponseEntity<Resource> uploadDataFile(@RequestParam MultipartFile file) {
+    public ResponseEntity<Resource> uploadDataFileRecipe(@RequestParam MultipartFile file) {
         this.recipeServices.uploadRecipe(file.getResource());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping(value = "/import/ingredient", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(
+            summary = "Загрузка ингредиента"
+    )
+    public ResponseEntity<Resource> uploadDataFileIngredient(@RequestParam MultipartFile file) {
+        this.ingredientServices.uploadIngredient(file.getResource());
         return ResponseEntity.noContent().build();
     }
 

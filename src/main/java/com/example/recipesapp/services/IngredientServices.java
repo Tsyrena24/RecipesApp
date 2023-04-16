@@ -4,6 +4,7 @@ import com.example.recipesapp.dto.IngredientDTO;
 import com.example.recipesapp.exception.IngredientNotFoundException;
 import com.example.recipesapp.model.Ingredient;
 import com.fasterxml.jackson.core.type.TypeReference;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -79,6 +80,12 @@ public class IngredientServices {
         }
         filesService.saveToFile(STONE_FILE_NAME, ingredients);
         return IngredientDTO.from(id, existingIngred);
+    }
+    public void uploadIngredient(Resource resource) {
+        filesService.saveResource(STONE_FILE_NAME, resource);
+        this.ingredients = filesService.readFromFile(STONE_FILE_NAME,
+                new TypeReference<>() {
+                });
     }
 }
 
