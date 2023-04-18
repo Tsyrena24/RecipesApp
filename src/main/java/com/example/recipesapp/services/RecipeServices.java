@@ -6,6 +6,7 @@ import com.example.recipesapp.exception.RecipeNotFoundException;
 import com.example.recipesapp.model.Ingredient;
 import com.example.recipesapp.model.Recipe;
 import com.fasterxml.jackson.core.type.TypeReference;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -14,6 +15,10 @@ import java.util.stream.Collectors;
 
 @Service  //Сервис рецептов использует сервис ингредиентов как зависимость и заинжектить
 public class RecipeServices {
+    @Value("${path.to.data.file}")
+    private String recipeFilePath;
+    @Value("${name.to.data.file.recipeName}")
+    private String recipeFileName;
 
     private static final String STONE_FILE_NAME = "recipes";
     private int idCounter = 0; //счетчик

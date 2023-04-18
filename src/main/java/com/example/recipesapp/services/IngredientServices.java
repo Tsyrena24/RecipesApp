@@ -4,6 +4,7 @@ import com.example.recipesapp.dto.IngredientDTO;
 import com.example.recipesapp.exception.IngredientNotFoundException;
 import com.example.recipesapp.model.Ingredient;
 import com.fasterxml.jackson.core.type.TypeReference;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -14,6 +15,11 @@ import java.util.Map;
 
 @Service
 public class IngredientServices {
+    @Value("${path.to.data.file}")
+    private String ingredientsFilePath;
+    @Value("${name.to.data.file.ingredientName}")
+    private String ingredientsFileName;
+
     private static final  String STONE_FILE_NAME = "ingredient";
     private int idCounter = 0; //счетчик
 
