@@ -1,33 +1,44 @@
-package com.example.recipesapp.services;
+package com.example.recipesapp.services.impl;
 
 import com.example.recipesapp.dto.IngredientDTO;
 import com.example.recipesapp.dto.RecipeDTO;
 import com.example.recipesapp.exception.RecipeNotFoundException;
 import com.example.recipesapp.model.Ingredient;
 import com.example.recipesapp.model.Recipe;
+import com.example.recipesapp.services.RecipeFileService;
+import com.example.recipesapp.services.RecipeService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import java.io.IOException;
+import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service  //Сервис рецептов использует сервис ингредиентов как зависимость и заинжектить
-public class RecipeServices {
+public class RecipeServicesImpl implements RecipeService {
 
     private static final String STONE_FILE_NAME = "recipes";
     private int idCounter = 0; //счетчик
-    private final IngredientServices ingredientServices;
-
-    private final FilesService filesService;
-
     private Map<Integer, Recipe> recipes = new HashMap<>();
+    private final RecipeFileService recipeFileService;
+    private final IngredientServicesImpl ingredientServices;
 
-    public RecipeServices(IngredientServices ingredientServices, FilesService filesService) {
+    private final IngredientFilesServiceImpl filesService;
+
+    public RecipeServicesImpl(IngredientServicesImpl ingredientServices,
+                              IngredientFilesServiceImpl filesService,
+                              RecipeFileService recipeFileService) {
         this.ingredientServices = ingredientServices;
         this.filesService = filesService;
-
+        this.recipeFileService = recipeFileService;
     }
 
 
@@ -44,6 +55,8 @@ public class RecipeServices {
 
     //Создание рецепта //нужно обращаться к ингредиент сервис и создать нужные ингредиенты
     //Добавление дубликатами
+
+    @Override
     public RecipeDTO addRecipe(Recipe recipe) {
         int id = idCounter++;
         recipes.put(id, recipe);
@@ -96,7 +109,7 @@ public class RecipeServices {
                 .collect(Collectors.toList());                                                        //колектором собираем вместе
     }
 
-
+    @Override
     public RecipeDTO getRecipe(int id) {
         Recipe recipe = recipes.get(id);
         if (recipe != null) {
@@ -105,6 +118,7 @@ public class RecipeServices {
         return null;
     }
 
+    @Override
     public List<RecipeDTO> getAllRecipe() {
         List<RecipeDTO> result = new ArrayList<>();
         for (Map.Entry<Integer, Recipe> entry : recipes.entrySet()) {
@@ -113,6 +127,7 @@ public class RecipeServices {
         return result;
     }
 
+    @Override
     public RecipeDTO editRecipe(int id, Recipe recipe) {
         Recipe existingRecipe = recipes.get(id); //нахождение рецепта
         if (existingRecipe == null) {
@@ -123,7 +138,7 @@ public class RecipeServices {
         return RecipeDTO.from(id, recipe);
     }
 
-
+    @Override
     public RecipeDTO deleteRecipe(int id) {
         Recipe existingRecipe = recipes.remove(id);  //нахождение рецепта и remove(id) удаление
         if (existingRecipe == null) {
@@ -134,16 +149,87 @@ public class RecipeServices {
 
     }
 
-    public Resource getRecipesFile() {
-        return filesService.getResource(STONE_FILE_NAME);
-    }
 
+    @Override
+    public Path createTextDataFile() throws IOException {
+        Path path = recipeFileService.createTampFile("recipesDataFile");
+        for (Recipe recipe : recipes.values()) {
+            try (Writer writer = Files.newBufferedWriter(path, StandardOpenOption.APPEND)) {
+                writer.append(recipe.getNameRecipe())
+                        .append("\n \n")
+                        .append("Время готовки: ")
+                        .append(String.valueOf(recipe.getCookedTime()))
+                        .append(" минут.")
+                        .append("\n");
+                writer.append("\n");
+                writer.append("Ингредиенты: \n \n");
+                recipe.getIngredients().forEach(ingredient -> {
+                    try {
+                        writer.append(" - ").
+                                append(ingredient.getNameIngredient()).
+                                append(" - ").
+                                append(String.valueOf(ingredient.getQuantityOfIngredients())).
+                                append(" ").
+                                append(ingredient.getMeasure()).
+                                append("\n \n");
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+                writer.append("\n");
+                writer.append("Инструкции по приготовлению: \n \n");
+                recipe.getCookingSteps().forEach(step -> {
+                    try {
+                        writer.append(" > ").
+                                append(step).
+                                append("\n \n");
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+                writer.append("\n \n");
+            }
+        }
+        return path;
+    }
     public void uploadRecipe(Resource resource) {
         filesService.saveResource(STONE_FILE_NAME, resource);
         this.recipes = filesService.readFromFile(STONE_FILE_NAME,
                 new TypeReference<>() {
                 });
     }
+    private void saveToFile() {
+        try {
+            String json = new ObjectMapper().writeValueAsString(recipes);
+            recipeFileService.saveToFile(json);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    private void readFromFile() {
+        try {
+            String json = recipeFileService.readFromFile();
+            recipes = new ObjectMapper().readValue(json, new TypeReference<HashMap<Integer, Recipe>>() {
+            });
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+//
+//        public Resource getRecipesFile() {
+//        return filesService.getDataFile(STONE_FILE_NAME);
+//    }
+//
+//    public void uploadRecipe(Resource resource) {
+//        filesService.saveResource(STONE_FILE_NAME, resource);
+//        this.recipes = filesService.readFromFile(STONE_FILE_NAME,
+//                new TypeReference<>() {
+//                });
+//    }
+
+
+
 }
 
 

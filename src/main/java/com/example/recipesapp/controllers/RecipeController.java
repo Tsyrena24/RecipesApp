@@ -3,7 +3,7 @@ package com.example.recipesapp.controllers;
 import com.example.recipesapp.dto.IngredientDTO;
 import com.example.recipesapp.dto.RecipeDTO;
 import com.example.recipesapp.model.Recipe;
-import com.example.recipesapp.services.RecipeServices;
+import com.example.recipesapp.services.impl.RecipeServicesImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -11,9 +11,16 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
 @RestController
@@ -22,9 +29,9 @@ import java.util.List;
 
 public class RecipeController {
 
-    private final RecipeServices recipeServices;
+    private final RecipeServicesImpl recipeServices;
 
-    public RecipeController(RecipeServices recipeServices) {
+    public RecipeController(RecipeServicesImpl recipeServices) {
         this.recipeServices = recipeServices;
     }
 
@@ -61,7 +68,7 @@ public class RecipeController {
         return recipeServices.getRecipe(id);
     }
 
-    //Списик рецептов по ингредиенту
+    //Список рецептов по ингредиенту
     @GetMapping("/byIngredient/{id}")
     @Operation(
             summary = "Поиск рецептов по id ингредиента",
@@ -120,9 +127,10 @@ public class RecipeController {
         return recipeServices.editRecipe(id, recipe);
     }
 
+
     @DeleteMapping("/{id}")
     @Operation(
-            summary = "Удаление рецептф",
+            summary = "Удаление рецептов",
             description = "Введите в строку id удаляемого рецепта, для исключения рецепта из списка"
 
     )
@@ -130,4 +138,83 @@ public class RecipeController {
         return recipeServices.deleteRecipe(id);
     }
 
+    @GetMapping("/export/text")
+    @Operation(
+            summary = "Загрузка репецт файла в текстовом формате",
+            description = "Загрузка файла"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Файл успешно загружен",
+                    content = {
+                            @Content(
+                                    mediaType = "application/text-plain",
+                                    array = @ArraySchema(schema =
+                                    @Schema(implementation = Recipe.class))
+                            )
+                    }
+            ),
+            @ApiResponse(
+                    responseCode = "204",
+                    description = "Файл не имеет содержимого",
+                    content = {
+                            @Content(
+                                    mediaType = "application/text-plain",
+                                    array = @ArraySchema(schema =
+                                    @Schema(implementation = Recipe.class))
+                            )
+                    }
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Ошибка параметров запроса",
+                    content = {
+                            @Content(
+                                    mediaType = "application/text-plain",
+                                    array = @ArraySchema(schema =
+                                    @Schema(implementation = Recipe.class))
+                            )
+                    }
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Неверный URL или такого действия нет в веб-приложении",
+                    content = {
+                            @Content(
+                                    mediaType = "application/text-plain",
+                                    array = @ArraySchema(schema =
+                                    @Schema(implementation = Recipe.class))
+                            )
+                    }
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Во время выполнения запроса произошла ошибка на сервере",
+                    content = {
+                            @Content(
+                                    mediaType = "application/text-plain",
+                                    array = @ArraySchema(schema =
+                                    @Schema(implementation = Recipe.class))
+                            )
+                    }
+            )
+    })
+    public ResponseEntity<Object> downloadTextDataFile() {
+        try {
+            Path path = recipeServices.createTextDataFile();
+            if (Files.size(path) == 0) {
+                return ResponseEntity.noContent().build();
+            }
+            InputStreamResource resource = new InputStreamResource(new FileInputStream(path.toFile()));
+            return ResponseEntity.ok()
+                    .contentType(MediaType.TEXT_PLAIN)
+                    .contentLength(Files.size(path))
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"recipesDataFile.txt\"")
+                    .body(resource);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body(e.toString());
+        }
+    }
 }

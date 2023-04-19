@@ -2,7 +2,7 @@ package com.example.recipesapp.controllers;
 
 import com.example.recipesapp.dto.IngredientDTO;
 import com.example.recipesapp.model.Ingredient;
-import com.example.recipesapp.services.IngredientServices;
+import com.example.recipesapp.services.impl.IngredientServicesImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -19,9 +19,9 @@ import java.util.List;
 @Tag(name = "Ингредиенты", description = "Добавление, введение, редактирование, удаление ингредиентов (id или список)")
 
 public class IngredientController {
-    private final IngredientServices ingredientServices;
+    private final IngredientServicesImpl ingredientServices;
 
-    public IngredientController(IngredientServices ingredientServices) {
+    public IngredientController(IngredientServicesImpl ingredientServices) {
         this.ingredientServices = ingredientServices;
     }
 

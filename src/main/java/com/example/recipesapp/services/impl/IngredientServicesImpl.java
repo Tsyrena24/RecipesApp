@@ -1,8 +1,9 @@
-package com.example.recipesapp.services;
+package com.example.recipesapp.services.impl;
 
 import com.example.recipesapp.dto.IngredientDTO;
 import com.example.recipesapp.exception.IngredientNotFoundException;
 import com.example.recipesapp.model.Ingredient;
+import com.example.recipesapp.services.IngredientService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
@@ -14,15 +15,15 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class IngredientServices {
+public class IngredientServicesImpl implements IngredientService {
     private static final  String STONE_FILE_NAME = "ingredient";
     private int idCounter = 0; //счетчик
 
-    private final FilesService filesService;
+    private final IngredientFilesServiceImpl filesService;
 
     public Map<Integer, Ingredient> ingredients = new HashMap<>();
 
-    public IngredientServices(FilesService filesService) {
+    public IngredientServicesImpl(IngredientFilesServiceImpl filesService) {
         this.filesService = filesService;
     }
 
@@ -37,6 +38,7 @@ public class IngredientServices {
         }
     }
 
+    @Override
     public IngredientDTO addIngredient(Ingredient ingredient) {
         int id = idCounter++;
         ingredients.put(id, ingredient);
@@ -44,6 +46,7 @@ public class IngredientServices {
         return IngredientDTO.from(id, ingredient);
     }
 
+    @Override
     public IngredientDTO getIngredient(int id) {
         Ingredient ingredient = ingredients.get(id);
         if (ingredient != null) {
@@ -52,7 +55,7 @@ public class IngredientServices {
         return null;
     }
 
-
+    @Override
     public List<IngredientDTO> getAllIngredient() {
         List<IngredientDTO> result = new ArrayList<>();
         for (Map.Entry<Integer, Ingredient> entry : ingredients.entrySet()) {
@@ -61,7 +64,7 @@ public class IngredientServices {
         return result;
     }
 
-
+    @Override
     public IngredientDTO editIngredient(int id, Ingredient ingredient) {
         Ingredient existingIngred = ingredients.get(id); //нахождение рецепта
         if (existingIngred == null) {
@@ -72,7 +75,7 @@ public class IngredientServices {
         return IngredientDTO.from(id, ingredient);
     }
 
-
+    @Override
     public IngredientDTO deleteIngredient(int id) {
         Ingredient existingIngred = ingredients.remove(id); //нахождение рецепта и удаление
         if (existingIngred == null) {
@@ -81,11 +84,33 @@ public class IngredientServices {
         filesService.saveToFile(STONE_FILE_NAME, ingredients);
         return IngredientDTO.from(id, existingIngred);
     }
+
+
     public void uploadIngredient(Resource resource) {
         filesService.saveResource(STONE_FILE_NAME, resource);
         this.ingredients = filesService.readFromFile(STONE_FILE_NAME,
                 new TypeReference<>() {
                 });
     }
+//    private void saveToFile() {
+//        try {
+//            String json = new ObjectMapper().writeValueAsString(ingredients);
+//            filesService.saveToFile(json);
+//        } catch (JsonProcessingException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
+//
+//    private void readFromFile() {
+//        try {
+//            TypeReference<Map<Integer, Ingredient>> typeReference = new TypeReference<Map<Integer, Ingredient>>() {};
+//
+//            String json = filesService.readFromFile(STONE_FILE_NAME, typeReference).toString();
+//            ingredients = new ObjectMapper().readValue(json, new TypeReference<HashMap<Integer, Ingredient>>() {
+//            });
+//        } catch (JsonProcessingException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
 }
 
