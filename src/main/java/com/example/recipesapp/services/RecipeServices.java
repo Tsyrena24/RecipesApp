@@ -19,7 +19,6 @@ public class RecipeServices {
     private String recipeFilePath;
     @Value("${name.to.data.file.recipesName}")
     private String recipeFileName;
-   // private static final  String STONE_FILE_NAME = "recipes";
 
 
     private int idCounter = 0; //счетчик

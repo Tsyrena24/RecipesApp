@@ -20,7 +20,6 @@ public class IngredientServices {
     @Value("${name.to.data.file.ingredientsName}")
     private String ingredientsFileName;
 
-    //private static final  String STONE_FILE_NAME = "ingredient";
     private int idCounter = 0; //счетчик
 
     private final FilesService filesService;
