@@ -17,10 +17,11 @@ import java.util.stream.Collectors;
 public class RecipeServices {
     @Value("${path.to.data.file}")
     private String recipeFilePath;
-    @Value("${name.to.data.file.recipeName}")
+    @Value("${name.to.data.file.recipesName}")
     private String recipeFileName;
+   // private static final  String STONE_FILE_NAME = "recipes";
 
-    private static final String STONE_FILE_NAME = "recipes";
+
     private int idCounter = 0; //счетчик
     private final IngredientServices ingredientServices;
 
@@ -37,7 +38,7 @@ public class RecipeServices {
     @PostConstruct
     private void init() {
         TypeReference<Map<Integer, Recipe>> typeReference = new TypeReference<Map<Integer, Recipe>>() {};
-        Map<Integer, Recipe> recipes = this.filesService.readFromFile(STONE_FILE_NAME, typeReference);
+        Map<Integer, Recipe> recipes = this.filesService.readFromFile(recipeFileName, typeReference);
         if (recipes != null) {
             this.recipes.putAll(recipes);
         }
@@ -51,7 +52,7 @@ public class RecipeServices {
         for (Ingredient ingredient : recipe.getIngredients()) {
             this.ingredientServices.addIngredient(ingredient);
         }
-        this.filesService.saveToFile(STONE_FILE_NAME, this.recipes);
+        this.filesService.saveToFile(recipeFileName, recipeFilePath);
         return RecipeDTO.from(id, recipe);
     }
 
@@ -120,7 +121,7 @@ public class RecipeServices {
             throw new RecipeNotFoundException(); //если null - исключение
         }
         recipes.put(id, recipe);
-        this.filesService.saveToFile(STONE_FILE_NAME, this.recipes);
+        this.filesService.saveToFile(recipeFileName, recipeFilePath);
         return RecipeDTO.from(id, recipe);
     }
 
@@ -130,7 +131,7 @@ public class RecipeServices {
         if (existingRecipe == null) {
             throw new RecipeNotFoundException();  //если null - исключение
         }
-        this.filesService.saveToFile(STONE_FILE_NAME, this.recipes);
+        this.filesService.saveToFile(recipeFileName, recipeFilePath);
         return RecipeDTO.from(id, existingRecipe);
 
     }

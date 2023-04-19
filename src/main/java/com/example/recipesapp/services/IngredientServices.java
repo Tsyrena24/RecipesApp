@@ -17,10 +17,10 @@ import java.util.Map;
 public class IngredientServices {
     @Value("${path.to.data.file}")
     private String ingredientsFilePath;
-    @Value("${name.to.data.file.ingredientName}")
+    @Value("${name.to.data.file.ingredientsName}")
     private String ingredientsFileName;
 
-    private static final  String STONE_FILE_NAME = "ingredient";
+    //private static final  String STONE_FILE_NAME = "ingredient";
     private int idCounter = 0; //счетчик
 
     private final FilesService filesService;
@@ -34,7 +34,7 @@ public class IngredientServices {
     @PostConstruct
     private void init() {
         TypeReference<Map<Integer, Ingredient>> typeReference = new TypeReference<Map<Integer, Ingredient>>() {};
-        Map<Integer, Ingredient> ingredientMap = this.filesService.readFromFile(STONE_FILE_NAME, typeReference);
+        Map<Integer, Ingredient> ingredientMap = this.filesService.readFromFile(ingredientsFileName, typeReference);
         if (ingredientMap != null) {
             ingredients.putAll(ingredientMap);
         }
@@ -43,7 +43,7 @@ public class IngredientServices {
     public IngredientDTO addIngredient(Ingredient ingredient) {
         int id = idCounter++;
         ingredients.put(id, ingredient);
-        filesService.saveToFile(STONE_FILE_NAME, ingredients);
+        filesService.saveToFile(ingredientsFileName, ingredientsFilePath);
         return IngredientDTO.from(id, ingredient);
     }
 
@@ -71,7 +71,7 @@ public class IngredientServices {
             throw new IngredientNotFoundException(); //если null - исключение
         }
         ingredients.put(id, ingredient);
-        filesService.saveToFile(STONE_FILE_NAME, ingredients);
+        filesService.saveToFile(ingredientsFileName, ingredientsFilePath);
         return IngredientDTO.from(id, ingredient);
     }
 
@@ -81,7 +81,7 @@ public class IngredientServices {
         if (existingIngred == null) {
             throw new IngredientNotFoundException(); //если null - исключение
         }
-        filesService.saveToFile(STONE_FILE_NAME, ingredients);
+        filesService.saveToFile(ingredientsFileName, ingredientsFilePath);
         return IngredientDTO.from(id, existingIngred);
     }
 }
